@@ -9,19 +9,47 @@
 """
 
 import re # импорт модуля для работы с регулярными выражениями
+import pyperclip # импорт модуля для работы с буфером обмена
 
 def postNumberFind(data):
     #Функция принимает исходный текст и возвращает номер поста наблюдения
     postNumberRegex = re.compile(r'Пост\s*\d')
-    postNumber = postNumberRegex.findall(data)
+    mo = postNumberRegex.search(data)
+    postNumber = mo.group()
 
     return postNumber
+
+def yearFind(data):
+    #Функция принимает исходный текст и возвращает год наблюдения
+    yearRegex = re.compile(r'год\s*\d\d\d\d')
+    mo = yearRegex.search(data)
+    year = mo.group()
+
+    return year
+
+def monthFind(data):
+    #Функция принимает исходный текст и возвращает месяц наблюдения
+    monthRegex = re.compile(r'месяц\s*\d\d')
+    mo = monthRegex.search(data)
+    month = mo.group()
+
+    return month
+
+#TODO регулярное выражение для строки типа:
+# │ 1│ 7│  8.0│23 │ 3 │4│  91│    │    1│    0│    1│   17│    8│    3│
+# с вычленением даты, срока, метеовеличин и концентраций примесей
+# использовать большое регулярное выражение содержащее несколько групп
+# см. AverageMeteo
 
 #TODO регулярные выражения для всех элементов таблицы
 
 
 
-data = 'Пост  1 Координаты поста +06-06         Количество примесей  6'
+data = str(pyperclip.paste()) # Программа принимает данные из буфера обмена
 
 print(postNumberFind(data))
+print(yearFind(data))
+print(monthFind(data))
+
+
 

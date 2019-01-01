@@ -13,43 +13,88 @@ import pyperclip # импорт модуля для работы с буферо
 
 def postNumberFind(data):
     #Функция принимает исходный текст и возвращает номер поста наблюдения
-    postNumberRegex = re.compile(r'Пост\s*\d')
+    postNumberRegex = re.compile(r'Пост\s*(\d)')
     mo = postNumberRegex.search(data)
-    postNumber = mo.group()
+    postNumber = mo.group(1)
 
     return postNumber
 
 def yearFind(data):
     #Функция принимает исходный текст и возвращает год наблюдения
-    yearRegex = re.compile(r'год\s*\d\d\d\d')
+    yearRegex = re.compile(r'год\s*(\d\d\d\d)')
     mo = yearRegex.search(data)
-    year = mo.group()
+    year = mo.group(1)
 
     return year
 
 def monthFind(data):
     #Функция принимает исходный текст и возвращает месяц наблюдения
-    monthRegex = re.compile(r'месяц\s*\d\d')
+    monthRegex = re.compile(r'месяц\s*(\d\d)')
     mo = monthRegex.search(data)
-    month = mo.group()
+    month = mo.group(1)
 
     return month
 
-#TODO регулярное выражение для строки типа:
-# │ 1│ 7│  8.0│23 │ 3 │4│  91│    │    1│    0│    1│   17│    8│    3│
-# с вычленением даты, срока, метеовеличин и концентраций примесей
-# использовать большое регулярное выражение содержащее несколько групп
-# см. AverageMeteo
+def observationaldataFind(data):
+    '''Функция принимает исходный текст и список дат, сроков, метеоданных
+    концентраций веществ найденных регулярным выражением'''
+    observationaldataRegex = re.compile(r'''
+    (│|¦)           # разделитель
+    (\s?\d+)        # дата
+    (│|¦)           # разделитель
+    (\s?\d+)        # срок
+    (│|¦)           # разделитель
+    (-*\s*\d+\.\d)  # температура, оС
+    (│|¦)           # разделитель
+    (\s?\d+\s?)     # направление ветра гр*10
+    (│|¦)           # разделитель
+    (\s?\d+\s?)     # скорость ветра м/с
+    (│|¦)           # разделитель
+    (\d)            # атм. явления
+    (│|¦)           # разделитель
+    (\s*\d+)        # относительная влажность, %
+    (│|¦)           # разделитель
+    (\s*\d*)        # упругость водяного пара, гПа
+    (│|¦)           # разделитель
+    (\s*\d+)        # взвешенные веществ *10^-1
+    (│|¦)           # разделитель
+    (\s*\d+)        # диоксид серы SO2 *10^-3
+    (│|¦)           # разделитель
+    (\s*\d+)        # оксид углерода CO *10^0
+    (│|¦)           # разделитель
+    (\s*\d+)        # диоксид азота NO2 *10^-2
+    (│|¦)           # разделитель
+    (\s*\d+)        # оксид азота NO *10^-3
+    (│|¦)           # разделитель
+    (\s*\d+)        # формальдегид CH2O *10^-3
+    ''',re.X)
+    observationaldata = observationaldataRegex.findall(data)
 
-#TODO регулярные выражения для всех элементов таблицы
+    return observationaldata
+    
+#TODO функция для вывода данных по каждому сроку наблюдений
+
+def dataByObservation(data, year, month, post):
+    '''Функциия принимает список с наблюдениями по срокам, год, месяц
+    и номер поста наблюдия и выводит текст с необходимыми значениями
+    разделенными точкой с запятой
+    '''
+    for i in data:
+        print(post, year, month, i[1], i[3], i[5], i[7], i[9], i[11], i[13], i[15], i[17],
+              i[19], i[21], i[23], i[25], i[27], sep = ';')
+    
+    
 
 
 
 data = str(pyperclip.paste()) # Программа принимает данные из буфера обмена
 
-print(postNumberFind(data))
-print(yearFind(data))
-print(monthFind(data))
+post = (postNumberFind(data))
+year = (yearFind(data))
+month = (monthFind(data))
+foundData = observationaldataFind(data)
+dataByObservation(foundData, year, month, post)
+#print(data)
 
 
 

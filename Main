@@ -10,6 +10,7 @@
 
 import re # импорт модуля для работы с регулярными выражениями
 import pyperclip # импорт модуля для работы с буфером обмена
+import os # импорт модуля для работы с файлами и путями
 
 def postNumberFind(data):
     #Функция принимает исходный текст и возвращает номер поста наблюдения
@@ -72,29 +73,68 @@ def observationaldataFind(data):
 
     return observationaldata
     
-#TODO функция для вывода данных по каждому сроку наблюдений
-
 def dataByObservation(data, year, month, post):
-    '''Функциия принимает список с наблюдениями по срокам, год, месяц
-    и номер поста наблюдия и выводит текст с необходимыми значениями
-    разделенными точкой с запятой
-    '''
+    '''Функция принимает список с наблюдениями по срокам, год, месяц
+    и номер поста наблюдения и возвращает отформатированный текст со
+    значениями разделенными точкой с запятой'''
+    fulltxt = ''
     for i in data:
-        print(post, year, month, i[1], i[3], i[5], i[7], i[9], i[11], i[13], i[15], i[17],
-              i[19], i[21], i[23], i[25], i[27], sep = ';')
-    
-    
+        # создается список содержащий необходимые части объектов совпадения
+        # регулярных выражений
+        txtlist = [post, year, month, i[1], i[3], i[5], i[7], i[9], i[11],
+                   i[13], i[15], i[17], i[19], i[21], i[23], i[25], i[27]]
+        txt = ''
+        for j in txtlist:
+            # создается строка с данными по каждому строку
+            txt = txt + str(j)+';'
+        fulltxt = fulltxt + txt + '\n'
+        #строки объединяются в один большой текст
 
+    return fulltxt
+        
+def fileReading(filePath):
+    '''Функция извлекает из файла filePath исходные данные и возвращает их
+    в виде текста'''
+    file = open(filePath)
+    fileForRegex = file.readlines()
+    data = str(fileForRegex)
+    file.close()
 
+    return data
 
-data = str(pyperclip.paste()) # Программа принимает данные из буфера обмена
+def writeFile(data):
+    '''Функция создает файл и записывает в него преобразованные данные'''
+    tzaResult = open('tzaResult.txt', 'w')    
+    tzaResult.write(data)
+    tzaResult.close()
 
-post = (postNumberFind(data))
-year = (yearFind(data))
-month = (monthFind(data))
-foundData = observationaldataFind(data)
-dataByObservation(foundData, year, month, post)
-#print(data)
+def fileExistenceCheck():
+    '''Функция проверяет существование файла с исходными данными'''
+    filePath = os.path.join(os.getcwd(), 'tza.txt')
+    if os.path.exists(filePath):
+        return filePath
+    else:
+        print('Файл не найден. Проверьте присутствуют ли в папке' +
+                  ' с программой файл tza.txt' +
+              '\n(Возможно он удален или переименован)')
+        print('Для продолжения нажмите клавишу \'ENTER\'')
+        pause = input()
 
+def converting():
+    '''Функция производит все необходимые действия если существует filePath'''
+    if filePath:
+        initialData = fileReading(filePath)
+        post = (postNumberFind(initialData))
+        year = (yearFind(initialData))
+        month = (monthFind(initialData))
+        foundData = observationaldataFind(initialData)
+        outputData = dataByObservation(foundData, year, month, post)
+        writeFile(outputData)
 
+filePath = fileExistenceCheck()
+converting()
+
+#TODO: сделать возможность чтения нескольких файлов
+#TODO: сделать возможность дополнение, а не перезаписи выходного файла
+#TODO: селать чтение из исходного файла .bat
 

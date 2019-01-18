@@ -1,16 +1,53 @@
 #! python3
 # Программа для перевода данных таблиц ТЗА-1 в удобный для работы вид
-"""
-Общий план:
-1. Получение данных из файла
-2. Распознование отдельных элементов таблицы (номер поста, год, месяц, дата,
-срок, метеовеличины,концентрации примесей)
-3. Вывод обработанных результатов в удобном для дальнейшей обрабоки формате
-"""
 
 import re # импорт модуля для работы с регулярными выражениями
 import pyperclip # импорт модуля для работы с буфером обмена
 import os # импорт модуля для работы с файлами и путями
+
+def fileExistenceCheck():
+    '''Функция проверяет существование файла с исходными данными'''
+    filePath = os.path.join(os.getcwd(), 'STTX.BAK')
+    if os.path.exists(filePath):
+        return filePath
+    else:
+        print('Файл не найден. Проверьте присутствуют ли в папке' +
+                  ' с программой файл tza.txt' +
+              '\n(Возможно он удален или переименован)')
+        print('Для продолжения нажмите клавишу \'ENTER\'')
+        pause = input()
+
+def fileReading(filePath):
+    '''Функция извлекает из файла filePath исходные данные и возвращает их
+    в виде текста'''
+    file = open(filePath)
+    fileForRegex = file.readlines()
+    data = str(fileForRegex)
+    file.close()
+
+    return data
+
+##def decodingWithBytes(file):
+##    ''' Функция принимает текстовый файл и меняет в нем кодировку с cp866
+##    на cp1251 путем перевода в байтовый вид'''
+##    # TODO: РАЗОБРАТЬСЯ С МЕХАНИЗМОМ КОДИРОВКИ 
+##    # Текст переводится в байтовый формат с нужной кодировкой
+##    txtBytes = bytes(file, "cp1251")
+##    # Байтовый файл переводится в текст с нужной кодировкой
+##    decodedTxt = str(txtBytes, "cp866") 
+##    
+##    return decodedTxt
+
+
+def decoding(file):
+    ''' Функция принимает текстовый файл и меняет в нем кодировку с cp866
+    на cp1251 '''
+    # TODO: РАЗОБРАТЬСЯ С МЕХАНИЗМОМ КОДИРОВКИ 
+    # Текст переводится в байтовый формат с нужной кодировкой
+    decodedTxt = file.encode('cp1251').decode('cp866')
+    
+    return decodedTxt
+
 
 def postNumberFind(data):
     #Функция принимает исходный текст и возвращает номер поста наблюдения
@@ -92,42 +129,22 @@ def dataByObservation(data, year, month, post):
 
     return fulltxt
         
-def fileReading(filePath):
-    '''Функция извлекает из файла filePath исходные данные и возвращает их
-    в виде текста'''
-    file = open(filePath)
-    fileForRegex = file.readlines()
-    data = str(fileForRegex)
-    file.close()
-
-    return data
-
 def writeFile(data):
     '''Функция создает файл и записывает в него преобразованные данные'''
     tzaResult = open('tzaResult.txt', 'w')    
     tzaResult.write(data)
     tzaResult.close()
 
-def fileExistenceCheck():
-    '''Функция проверяет существование файла с исходными данными'''
-    filePath = os.path.join(os.getcwd(), 'tza.txt')
-    if os.path.exists(filePath):
-        return filePath
-    else:
-        print('Файл не найден. Проверьте присутствуют ли в папке' +
-                  ' с программой файл tza.txt' +
-              '\n(Возможно он удален или переименован)')
-        print('Для продолжения нажмите клавишу \'ENTER\'')
-        pause = input()
 
 def converting():
     '''Функция производит все необходимые действия если существует filePath'''
     if filePath:
         initialData = fileReading(filePath)
-        post = (postNumberFind(initialData))
-        year = (yearFind(initialData))
-        month = (monthFind(initialData))
-        foundData = observationaldataFind(initialData)
+        decodedData = decoding(initialData)
+        post = (postNumberFind(decodedData))
+        year = (yearFind(decodedData))
+        month = (monthFind(decodedData))
+        foundData = observationaldataFind(decodedData)
         outputData = dataByObservation(foundData, year, month, post)
         writeFile(outputData)
 
@@ -135,6 +152,4 @@ filePath = fileExistenceCheck()
 converting()
 
 #TODO: сделать возможность чтения нескольких файлов
-#TODO: сделать возможность дополнение, а не перезаписи выходного файла
-#TODO: селать чтение из исходного файла .bat
-
+#TODO: сделать возможность дополнения, а не перезаписи выходного файла    

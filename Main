@@ -4,14 +4,14 @@
 import re # импорт модуля для работы с регулярными выражениями
 import os # импорт модуля для работы с файлами и путями
 
-def fileExistenceCheck():
+def fileExistenceCheck(file):
     '''Функция проверяет существование файла с исходными данными'''
-    filePath = os.path.join(os.getcwd(), 'STTX.BAK')
+    filePath = os.path.join(os.getcwd(), file)
     if os.path.exists(filePath):
         return filePath
     else:
         print('Файл не найден. Проверьте присутствуют ли в папке' +
-                  ' с программой файл tza.txt' +
+                  ' с программой файл STTX.BAK' +
               '\n(Возможно он удален или переименован)')
         print('Для продолжения нажмите клавишу \'ENTER\'')
         pause = input()
@@ -66,7 +66,7 @@ def yearFind(data):
 
 def monthFind(data):
     #Функция принимает исходный текст и возвращает месяц наблюдения
-    monthRegex = re.compile(r'месяц\s*(\d\d)')
+    monthRegex = re.compile(r'месяц\s*(\d+)')
     mo = monthRegex.search(data)
     month = mo.group(1)
 
@@ -101,11 +101,11 @@ def observationaldataFind(data):
     (│|¦)           # разделитель
     (\s*\d+)        # диоксид азота NO2 *10^-2
     (│|¦)           # разделитель
-    (\s*\d+)        # оксид азота NO *10^-3
-    (│|¦)           # разделитель
-    (\s*\d+)        # формальдегид CH2O *10^-3
+    (\s*\d+)        # оксид азота NO *10^-3 !!!!!!
+    (│|¦)?           # разделитель
+    (\s*\d+)?        # формальдегид CH2O *10^-3 !!!!!!
     ''',re.X)
-    observationaldata = observationaldataRegex.findall(data)
+    observationaldata = observationaldataRegex.findall(data)    
 
     return observationaldata
     
@@ -128,9 +128,12 @@ def dataByObservation(data, year, month, post):
 
     return fulltxt
         
+##def writeFile(data, post, year, month):
 def writeFile(data):
     '''Функция создает файл и записывает в него преобразованные данные'''
-    tzaResult = open('tzaResult.txt', 'w')    
+##    fileName = year + ' ' + month + ' P' + post + '.txt'
+    fileName = 'result.txt'
+    tzaResult = open(fileName, 'a')    
     tzaResult.write(data)
     tzaResult.close()
 
@@ -142,13 +145,23 @@ def converting():
         decodedData = decoding(initialData)
         post = (postNumberFind(decodedData))
         year = (yearFind(decodedData))
-        month = (monthFind(decodedData))
-        foundData = observationaldataFind(decodedData)
+        month = (monthFind(decodedData))        
+        foundData = observationaldataFind(decodedData)        
         outputData = dataByObservation(foundData, year, month, post)
+##        writeFile(outputData, post, year, month)
         writeFile(outputData)
+        print('Post: ' + post + ' Year: ' + year + ' Month:' + month)
 
-filePath = fileExistenceCheck()
-converting()
-#TODO: имя создаваемого файла должно содержать номер поста, год и месяц измерений
-#TODO: возможность чтения нескольких файлов
+print('Обработанные данные:')
+
+fileList = os.listdir(os.getcwd())
+for i in range(4, len(fileList)): 
+    filePath = fileExistenceCheck(fileList[i])    
+    converting()
+
+print('Для выхода нажмите клавишу \'ENTER\'')
+pause = input()  
+
+
 #TODO: возможность дополнения, а не перезаписи выходного файла    
+

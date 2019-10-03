@@ -110,6 +110,22 @@ def observationaldataFind(data):
     observationaldata = observationaldataRegex.findall(data)    
 
     return observationaldata
+
+def observationaldataFindIncomplete(data):
+    #TODO: Сделать автоматическое определение количества веществ и,
+    # сооответственно, самоподстраивающееся регулярное выражение
+    '''Функция принимает исходный текст и список дат и сроков'''
+    observationaldataRegex = re.compile(r'''
+    (│|¦)           # разделитель
+    (\s?\d{1,2})    # дата
+    (│|¦)           # разделитель
+    (\s?\d{1,2})    # срок
+    (│|¦)           # разделитель
+
+    ''',re.X)
+    observationaldata = observationaldataRegex.findall(data)    
+
+    return observationaldata
     
 def dataByObservation(data, year, month, post):
     '''Функция принимает список с наблюдениями по срокам, год, месяц
@@ -123,7 +139,25 @@ def dataByObservation(data, year, month, post):
                    i[13], i[15], i[17], i[19], i[21], i[23], i[25], i[27]]
         txt = ''
         for j in txtlist:
-            # создается строка с данными по каждому строку
+            # создается строка с данными по каждому сроку
+            txt = txt + str(j)+';'
+        fulltxt = fulltxt + txt + '\n'
+        #строки объединяются в один большой текст
+
+    return fulltxt
+
+def dataByObservationIncomplete(data, year, month, post):
+    '''Функция принимает список с наблюдениями по срокам, год, месяц
+    и номер поста наблюдения и возвращает отформатированный текст со
+    значениями разделенными точкой с запятой'''
+    fulltxt = ''
+    for i in data:
+        # создается список содержащий необходимые части объектов совпадения
+        # регулярных выражений
+        txtlist = [post, year, month, i[1], i[3]]
+        txt = ''
+        for j in txtlist:
+            # создается строка с данными по каждому сроку
             txt = txt + str(j)+';'
         fulltxt = fulltxt + txt + '\n'
         #строки объединяются в один большой текст
@@ -149,11 +183,25 @@ def converting():
         year = (yearFind(decodedData))
         month = (monthFind(decodedData))        
         foundData = observationaldataFind(decodedData)
-        print(foundData)
         outputData = dataByObservation(foundData, year, month, post)
 ##      writeFile(outputData, post, year, month)
         writeFile(outputData)
         print('Post: ' + post + ' Year: ' + year + ' Month:' + month)
+
+def check():
+    '''Функция производит проверку количества сроков наблюдения'''
+    if filePath:
+        initialData = fileReading(filePath)
+        decodedData = decoding(initialData)
+        post = (postNumberFind(decodedData))
+        year = (yearFind(decodedData))
+        month = (monthFind(decodedData))        
+        foundData = observationaldataFindIncomplete(decodedData)
+        outputData = dataByObservationIncomplete(foundData, year, month, post)
+##      writeFile(outputData, post, year, month)
+        writeFile(outputData)
+        print('Post: ' + post + ' Year: ' + year + ' Month:' + month)
+        
 
 print('Обработанные данные:')
 
@@ -162,6 +210,8 @@ print(fileList)
 for i in range(2, len(fileList)-1): 
     filePath = fileExistenceCheck(fileList[i])
     converting()
+##    check()
 
 print('Для выхода нажмите клавишу \'ENTER\'')
 pause = input()  
+
